@@ -18,6 +18,15 @@ class ConfirmManagerTests(unittest.TestCase):
         self.assertEqual(res, "pending")
         self.assertTrue(cm.confirm_with_gesture("Open_Palm", now + 2.1))
 
+    def test_gesture_confirm_requires_matching_gesture_and_non_expired_pending(self):
+        cm = ConfirmManager(required=True, timeout=1.0, confirm_gesture="Open_Palm")
+        now = 300.0
+        self.assertEqual(cm.request("save_document", now), "pending")
+        self.assertFalse(cm.confirm_with_gesture("Pinch", now + 0.1))
+        self.assertEqual(cm.pending_action, "save_document")
+        self.assertFalse(cm.confirm_with_gesture("Open_Palm", now + 1.2))
+        self.assertIsNone(cm.pending_action)
+
     def test_expired_pending(self):
         cm = ConfirmManager(required=True, timeout=1.0)
         now = 200.0
