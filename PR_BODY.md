@@ -41,9 +41,8 @@ python -m unittest discover -s tests -v
 ```bash
 # Execute a one-off command via env var
 MMDC_COMMAND="Open Explorer" python -m desktop_control_prototype.app
-# For confirmation-required mode (repeat to confirm):
-MMDC_CONFIRM_REQUIRED=1 MMDC_COMMAND="Open Explorer" python -m desktop_control_prototype.app
-# Repeat the same command within CONFIRM_TIMEOUT seconds to confirm.
+# Note: MMDC_COMMAND executes immediately and is cleared after one run.
+# Confirmation-required behavior applies to gesture-triggered sensitive actions.
 ```
 
 3) Pointer calibration and manual testing (use a laptop or host webcam; containers may not have a camera):
@@ -76,4 +75,3 @@ CI & packaging
 
 - GitHub Actions workflow runs tests and builds a wheel for Python 3.10/3.11; artifact uploaded.
 - Build locally with `python -m build` after installing `build`.
-
