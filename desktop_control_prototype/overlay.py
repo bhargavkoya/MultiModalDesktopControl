@@ -5,7 +5,7 @@ except Exception:
     cv2 = None
 
 
-def draw_state(frame, state, gesture, last_action=None):
+def draw_state(frame, state, gesture, profile=None, last_action=None, confirm_message=None):
     if frame is None:
         return None
     if cv2 is None:
@@ -19,7 +19,11 @@ def draw_state(frame, state, gesture, last_action=None):
     alpha = 0.5
     cv2.addWeighted(overlay, alpha, frame, 1 - alpha, 0, frame)
     text = f"Mode: {state} | Gesture: {gesture}"
+    if profile:
+        text += f" | Profile: {profile}"
     if last_action:
         text += f" | Last: {last_action}"
+    if confirm_message:
+        cv2.putText(frame, confirm_message, (8, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 200, 200), 2)
     cv2.putText(frame, text, (8, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
     return frame
