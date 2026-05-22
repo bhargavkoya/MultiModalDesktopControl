@@ -202,6 +202,9 @@ def main():
         if _is_throttled_action(intent.action) and now - last_action_at < ACTION_COOLDOWN_SECONDS:
             intent = Intent(gesture=intent.gesture, action="no_op", next_mode=intent.next_mode)
 
+        # Expire any stale pending confirmation before checking pending_action
+        confirm_manager.cancel_if_expired(now)
+
         # Confirmation gating for sensitive actions
         confirm_message = None
         if intent.action in disabled_actions:
@@ -228,7 +231,6 @@ def main():
         if _is_throttled_action(intent.action) and intent.action != "move_pointer" and intent.action != "no_op":
             last_action_at = now
 
-        confirm_manager.cancel_if_expired(now)
         out = draw_state(frame, sm.get_state(), gesture, profile=active_profile, last_action=intent.action, confirm_message=confirm_message)
         saved_path = _save_frame(out, project_root)
 
