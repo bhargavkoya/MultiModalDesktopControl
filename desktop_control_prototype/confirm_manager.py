@@ -2,9 +2,10 @@
 
 
 class ConfirmManager:
-    def __init__(self, required: bool = False, timeout: float = 2.0):
+    def __init__(self, required: bool = False, timeout: float = 2.0, confirm_gesture: str = "Open_Palm"):
         self.required = required
         self.timeout = timeout
+        self.confirm_gesture = confirm_gesture
         self.pending_action = None
         self.pending_since = 0.0
 
@@ -37,8 +38,11 @@ class ConfirmManager:
         """Confirm the pending action using a gesture. Returns True if confirmed."""
         if not self.required or not self.pending_action:
             return False
-        # Gesture confirmation is handled externally by matching configured gesture
-        # Here we simply confirm if pending_action exists; caller should match gesture
+        self.cancel_if_expired(now)
+        if not self.pending_action:
+            return False
+        if gesture != self.confirm_gesture:
+            return False
         self.pending_action = None
         self.pending_since = 0.0
         return True

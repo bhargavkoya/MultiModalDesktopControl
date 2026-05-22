@@ -132,7 +132,9 @@ def main():
     tracker = Tracker()
     controller = DesktopController()
     sm = StateMachine()
-    confirm_manager = ConfirmManager(required=MMDC_CONFIRM_REQUIRED, timeout=CONFIRM_TIMEOUT)
+    confirm_manager = ConfirmManager(
+        required=MMDC_CONFIRM_REQUIRED, timeout=CONFIRM_TIMEOUT, confirm_gesture=CONFIRM_GESTURE
+    )
     disabled_actions = set(DISABLED_ACTIONS)
     logging.basicConfig(level=logging.INFO)
 
