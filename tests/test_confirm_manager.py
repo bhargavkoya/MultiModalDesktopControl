@@ -13,6 +13,10 @@ class ConfirmManagerTests(unittest.TestCase):
         # repeat within timeout
         res = cm.request("save_document", now + 0.5)
         self.assertEqual(res, "confirmed")
+        # gesture-based confirm should also work when pending
+        res = cm.request("go_back", now + 2.0)
+        self.assertEqual(res, "pending")
+        self.assertTrue(cm.confirm_with_gesture("Open_Palm", now + 2.1))
 
     def test_expired_pending(self):
         cm = ConfirmManager(required=True, timeout=1.0)

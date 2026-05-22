@@ -33,3 +33,20 @@ python -m desktop_control_prototype.app
 source .venv/bin/activate
 python -m unittest discover -s tests -v
 ```
+
+## Packaging
+
+Build a wheel locally:
+
+```bash
+source .venv/bin/activate
+python -m pip install --upgrade build
+python -m build
+ls dist/
+```
+
+Install locally:
+
+```bash
+pip install dist/multimodal_desktop_control-0.1.0-py3-none-any.whl
+```

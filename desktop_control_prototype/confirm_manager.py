@@ -32,3 +32,13 @@ class ConfirmManager:
         if self.pending_action and now - self.pending_since > self.timeout:
             self.pending_action = None
             self.pending_since = 0.0
+
+    def confirm_with_gesture(self, gesture: str, now: float) -> bool:
+        """Confirm the pending action using a gesture. Returns True if confirmed."""
+        if not self.required or not self.pending_action:
+            return False
+        # Gesture confirmation is handled externally by matching configured gesture
+        # Here we simply confirm if pending_action exists; caller should match gesture
+        self.pending_action = None
+        self.pending_since = 0.0
+        return True
