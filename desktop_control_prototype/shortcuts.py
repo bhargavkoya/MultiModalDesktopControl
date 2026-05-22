@@ -1,2 +1,12 @@
 """Convenience mappings for OS/app shortcuts."""
 EXPLORER = ("win", "e")
+START_MENU = ("win",)
+ADDRESS_BAR = ("ctrl", "l")
+BACK = ("backspace",)
+OPEN_SELECTED = ("enter",)
+MOVE_UP = ("up",)
+MOVE_DOWN = ("down",)
+SAVE_DOCUMENT = ("ctrl", "s")
+FIND = ("ctrl", "f")
+SELECT_ALL = ("ctrl", "a")
+BOLD = ("ctrl", "b")
