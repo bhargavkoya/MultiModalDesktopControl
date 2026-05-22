@@ -7,7 +7,8 @@ from desktop_control_prototype.intents import Intent, classify_pose, resolve_int
 from desktop_control_prototype.pointer_calibration import calibrate_pointer
 from desktop_control_prototype.command_adapter import parse_command
 from desktop_control_prototype.confirm_manager import ConfirmManager
-from desktop_control_prototype.config import MMDC_CONFIRM_REQUIRED, CONFIRM_TIMEOUT
+from desktop_control_prototype.config import MMDC_CONFIRM_REQUIRED, CONFIRM_TIMEOUT, CONFIRM_GESTURE, DISABLED_ACTIONS
+import logging
 from desktop_control_prototype.pointer_interactions import PointerGestureState, advance_pointer_gesture
 from desktop_control_prototype.tracker import Tracker
 from desktop_control_prototype.overlay import draw_state
@@ -132,6 +133,8 @@ def main():
     controller = DesktopController()
     sm = StateMachine()
     confirm_manager = ConfirmManager(required=MMDC_CONFIRM_REQUIRED, timeout=CONFIRM_TIMEOUT)
+    disabled_actions = set(DISABLED_ACTIONS)
+    logging.basicConfig(level=logging.INFO)
 
     project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     last_intent = "idle"
@@ -201,20 +204,31 @@ def main():
 
         # Confirmation gating for sensitive actions
         confirm_message = None
+        if intent.action in disabled_actions:
+            logging.info("Action '%s' is disabled by configuration", intent.action)
+            intent = Intent(gesture=intent.gesture, action="no_op", next_mode=intent.next_mode)
+
         if intent.action and _is_sensitive_action(intent.action):
-            confirm_result = confirm_manager.request(intent.action, now)
-            if confirm_result == "pending":
-                confirm_message = f"Confirm: repeat '{intent.action}' to execute"
-                intent = Intent(gesture=intent.gesture, action="no_op", next_mode=intent.next_mode)
+            # If a confirmation gesture is provided and observed, confirm immediately
+            if CONFIRM_GESTURE and gesture == CONFIRM_GESTURE and confirm_manager.pending_action == intent.action:
+                # confirm via gesture
+                confirm_manager.confirm_with_gesture(gesture, now)
+                logging.info("Confirmed action '%s' via gesture %s", intent.action, gesture)
             else:
-                # confirmed, proceed normally
-                pass
+                confirm_result = confirm_manager.request(intent.action, now)
+                if confirm_result == "pending":
+                    confirm_message = f"Confirm: repeat '{intent.action}' or perform {CONFIRM_GESTURE} to execute"
+                    intent = Intent(gesture=intent.gesture, action="no_op", next_mode=intent.next_mode)
+                else:
+                    # confirmed, proceed normally
+                    pass
 
         _execute_intent(controller, sm, intent)
 
         if _is_throttled_action(intent.action) and intent.action != "move_pointer" and intent.action != "no_op":
             last_action_at = now
 
+        confirm_manager.cancel_if_expired(now)
         out = draw_state(frame, sm.get_state(), gesture, profile=active_profile, last_action=intent.action, confirm_message=confirm_message)
         saved_path = _save_frame(out, project_root)
 
