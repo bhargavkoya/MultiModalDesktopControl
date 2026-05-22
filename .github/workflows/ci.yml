@@ -1,17 +1,23 @@
-name: CI
+ name: CI
 
 on:
   push:
-    branches: [ main, feature/** ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
+
+# Prevent duplicate in-flight runs for the same ref
+concurrency:
+  group: "ci-${{ github.ref }}"
+  cancel-in-progress: true
 
 jobs:
   test-and-build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.10, 3.11]
+        # Quote versions to avoid YAML parsing them as floats (3.10 -> 3.1)
+        python-version: ['3.10', '3.11']
 
     steps:
       - name: Checkout
