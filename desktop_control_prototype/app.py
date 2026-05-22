@@ -210,20 +210,19 @@ def main():
             logging.info("Action '%s' is disabled by configuration", intent.action)
             intent = Intent(gesture=intent.gesture, action="no_op", next_mode=intent.next_mode)
 
-        if intent.action and _is_sensitive_action(intent.action):
-            # If a confirmation gesture is provided and observed, confirm immediately
-            if CONFIRM_GESTURE and gesture == CONFIRM_GESTURE and confirm_manager.pending_action == intent.action:
-                # confirm via gesture
-                confirm_manager.confirm_with_gesture(gesture, now)
-                logging.info("Confirmed action '%s' via gesture %s", intent.action, gesture)
+        pending_action = confirm_manager.pending_action
+        if CONFIRM_GESTURE and pending_action and gesture == CONFIRM_GESTURE:
+            if confirm_manager.confirm_with_gesture(gesture, now):
+                logging.info("Confirmed action '%s' via gesture %s", pending_action, gesture)
+                intent = Intent(gesture=gesture, action=pending_action, next_mode=None)
+        elif intent.action and _is_sensitive_action(intent.action):
+            confirm_result = confirm_manager.request(intent.action, now)
+            if confirm_result == "pending":
+                confirm_message = f"Confirm: repeat '{intent.action}' or perform {CONFIRM_GESTURE} to execute"
+                intent = Intent(gesture=intent.gesture, action="no_op", next_mode=intent.next_mode)
             else:
-                confirm_result = confirm_manager.request(intent.action, now)
-                if confirm_result == "pending":
-                    confirm_message = f"Confirm: repeat '{intent.action}' or perform {CONFIRM_GESTURE} to execute"
-                    intent = Intent(gesture=intent.gesture, action="no_op", next_mode=intent.next_mode)
-                else:
-                    # confirmed, proceed normally
-                    pass
+                # confirmed, proceed normally
+                pass
 
         _execute_intent(controller, sm, intent)
 
