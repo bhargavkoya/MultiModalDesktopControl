@@ -11,7 +11,7 @@ from desktop_control_prototype.config import MMDC_CONFIRM_REQUIRED, CONFIRM_TIME
 import logging
 from desktop_control_prototype.pointer_interactions import PointerGestureState, advance_pointer_gesture
 from desktop_control_prototype.tracker import Tracker
-from desktop_control_prototype.overlay import draw_state
+from desktop_control_prototype.overlay import draw_landmarks, draw_state
 from desktop_control_prototype.state_machine import StateMachine
 import os
 import time
@@ -232,7 +232,9 @@ def main():
         if _is_throttled_action(intent.action) and intent.action != "move_pointer" and intent.action != "no_op":
             last_action_at = now
 
-        out = draw_state(frame, sm.get_state(), gesture, profile=active_profile, last_action=intent.action, confirm_message=confirm_message)
+        out = frame.copy() if hasattr(frame, "copy") else frame
+        out = draw_landmarks(out, landmarks)
+        out = draw_state(out, sm.get_state(), gesture, profile=active_profile, last_action=intent.action, confirm_message=confirm_message)
         saved_path = _save_frame(out, project_root)
 
         last_intent = intent.action
